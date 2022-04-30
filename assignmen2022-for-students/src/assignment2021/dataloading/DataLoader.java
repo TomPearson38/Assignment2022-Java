@@ -59,7 +59,7 @@ public class DataLoader extends AbstractDataLoader {
 	    
 	    for (int i = 0; i < length; i++) {
 	        char digit = input.charAt(i);
-	        if (!('0' < digit && digit < '9')) {
+	        if (!('0' <= digit && digit <= '9')) {
 	            return false;
 	        }
 	    }

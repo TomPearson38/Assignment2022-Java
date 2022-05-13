@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -15,9 +16,11 @@ public class GUIPanel extends AbstractGUIPanel {
 
 	private static final long serialVersionUID = -1257936627636425453L;
 
+	private ArrayList<MeasurementAssociation> loadedData;
+	
 	public GUIPanel(Collection<Participant> participants) {
 		super(participants);
-		// TODO Auto-generated constructor stub
+		loadedData = new ArrayList<MeasurementAssociation>();
 	}
 
 	@Override
@@ -67,38 +70,59 @@ public class GUIPanel extends AbstractGUIPanel {
 
 	@Override
 	public String getSelectedParticipantName() {
-		// TODO Auto-generated method stub
-		return null;
+		Object current = comboListParticipants.getSelectedItem();
+		return current.toString();
 	}
 
 	@Override
 	public String getSelectedTrackersNames() {
-		// TODO Auto-generated method stub
-		return null;
+		String current = comboListTrackers.getSelectedItem().toString();
+		return current;
 	}
 
+	public Collection<Participant> getAllParticpants(){
+		return participants;
+	}
+	
+	public ArrayList<MeasurementAssociation> getLoadedData(){
+		return loadedData;
+	}
+	
 	@Override
 	public MeasurementType getSelectedMeasurementType() {
-		// TODO Auto-generated method stub
-		return null;
+		String measurementName = comboListMeasurementType.getSelectedItem().toString();
+		MeasurementType current = MeasurementType.fromMeasurementName(measurementName);
+		return current;
 	}
 
 	@Override
 	public boolean isShowAverageSelected() {
-		// TODO Auto-generated method stub
-		return false;
+		if(cbAverageValue.isSelected()) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean isShowMinMaxSelected() {
-		// TODO Auto-generated method stub
-		return false;
+		if(cbMaxMinValues.isSelected()) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean isShowIncrementsSelected() {
-		// TODO Auto-generated method stub
-		return false;
+		if(cbIncrements.isSelected()) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 	
 	
@@ -108,10 +132,32 @@ public class GUIPanel extends AbstractGUIPanel {
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
 			if(source == addCurvesButton) {
+				String selectedParticipantName = getSelectedParticipantName();
+				String selectedTrackerName = getSelectedTrackersNames();
+				boolean isDataUpdated;
+				
+				if(selectedTrackerName == "all") {					
+					Collection<String> trackerNames = ((Participant) participants.toArray()[0]).getAllTrackerNames();
+					for(String currentTracker : trackerNames) {
+						isDataUpdated = visualisedCurvesPanel.addParticipantsToPlot(selectedParticipantName, currentTracker);
+						System.out.println(isDataUpdated);
+					}
+					
+				}
+				else {
+					isDataUpdated = visualisedCurvesPanel.addParticipantsToPlot(selectedParticipantName, selectedTrackerName);
+					System.out.println(isDataUpdated);
+				}
+				
+				//TODO
+				//Add redraw functionality
 				
 			}
 			else if(source == removeAllCurvesButton) {
-				
+				visualisedCurvesPanel.removeAllCurves();
+			}
+			else if(source == comboListMeasurementType) {
+
 			}
 		}
 		
@@ -121,8 +167,16 @@ public class GUIPanel extends AbstractGUIPanel {
 
 		@Override
 		public void itemStateChanged(ItemEvent e) {
-			// TODO Auto-generated method stub
-			
+			Object source = e.getSource();
+			if(source == cbIncrements) {
+
+			}
+			else if(source == cbAverageValue) {
+
+			}
+			else if(source == cbMaxMinValues) {
+
+			}
 		}
 		
 	}

@@ -18,6 +18,8 @@ public class GUIPanel extends AbstractGUIPanel {
 
 	private ArrayList<MeasurementAssociation> loadedData;
 	
+	MeasurementType currentChartType = MeasurementType.DISTANCE;
+	
 	public GUIPanel(Collection<Participant> participants) {
 		super(participants);
 		loadedData = new ArrayList<MeasurementAssociation>();
@@ -125,44 +127,61 @@ public class GUIPanel extends AbstractGUIPanel {
 		}
 	}
 	
-	
+	/**
+	 * Action listener class for the page elements
+	 * @author tomap
+	 * 15/05/2022
+	 */
 	class pageEventListener implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
+			//Used to identify what triggered the action event
 			Object source = e.getSource();
 			if(source == addCurvesButton) {
 				String selectedParticipantName = getSelectedParticipantName();
 				String selectedTrackerName = getSelectedTrackersNames();
 				boolean isDataUpdated;
 				
+				//Adds every tracker related to the participant
 				if(selectedTrackerName == "all") {					
 					Collection<String> trackerNames = ((Participant) participants.toArray()[0]).getAllTrackerNames();
 					for(String currentTracker : trackerNames) {
+						//Data is updated
 						isDataUpdated = visualisedCurvesPanel.addParticipantsToPlot(selectedParticipantName, currentTracker);
 						System.out.println(isDataUpdated);
 					}
 					
 				}
 				else {
+					//Only individual participant is added
 					isDataUpdated = visualisedCurvesPanel.addParticipantsToPlot(selectedParticipantName, selectedTrackerName);
 					System.out.println(isDataUpdated);
 				}
 				
-				//TODO
-				//Add redraw functionality
-				
 			}
+			//Chart is set to default
 			else if(source == removeAllCurvesButton) {
 				visualisedCurvesPanel.removeAllCurves();
 			}
+			//Chart type is changed
 			else if(source == comboListMeasurementType) {
-
+				MeasurementType currentType = getSelectedMeasurementType();
+				if(currentChartType != currentType) {
+					currentChartType = currentType;
+					visualisedCurvesPanel.redrawGraph();
+				}
+				
 			}
 		}
 		
 	}
 	
+	/**
+	 * Item listener for page elements
+	 * @author tomap
+	 * 15/05/2022
+	 */
 	class checkBoxListener implements ItemListener {
 
 		@Override

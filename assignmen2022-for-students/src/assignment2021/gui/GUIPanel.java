@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import assignment2021.codeprovided.fitnesstracker.Participant;
+import assignment2021.codeprovided.fitnesstracker.Tracker;
 import assignment2021.codeprovided.fitnesstracker.measurements.MeasurementType;
 import assignment2021.codeprovided.gui.AbstractGUIPanel;
 
@@ -23,6 +24,7 @@ public class GUIPanel extends AbstractGUIPanel {
 	public GUIPanel(Collection<Participant> participants) {
 		super(participants);
 		loadedData = new ArrayList<MeasurementAssociation>();
+		dataSummaryGeneration();
 	}
 
 	@Override
@@ -128,6 +130,55 @@ public class GUIPanel extends AbstractGUIPanel {
 	}
 	
 	/**
+	 * Calculates the data to be added to the general summary text box
+	 */
+	private void dataSummaryGeneration() {
+		int numOfParticipants = participants.size();
+		ArrayList<String> foundTrackers = new ArrayList<String>();
+		int numOfFemale = 0;
+		int numOfMale = 0;
+		int totalNumOfMeasurements = 0;
+
+		for(Participant currentParticipant : participants) {
+			if(currentParticipant.getGender().equals("f")) {
+				numOfFemale++;
+			}
+			else {
+				numOfMale++;
+			}
+			Collection<Tracker> trackers = currentParticipant.getAllTrackers();
+			for(Tracker currentTracker : trackers) {
+				totalNumOfMeasurements += currentTracker.getAllMeasurements().size();
+				//Checks to see the tracker has been found previously
+				if(!foundTrackers.contains(currentTracker.getName())){
+					foundTrackers.add(currentTracker.getName());
+				}
+			}
+		}
+		
+		//Result string is generated
+		String result = "";
+		result += "Total Number of Participants: " + numOfParticipants;
+		result += "\nTotal Number of Trackers: " + foundTrackers.size();
+		result += "\nNumber of Male Participants: " + numOfMale;
+		result += "\nNumber of Female Participants:" + numOfFemale;
+		result += "\nTotal Number of Measurements Across All Participants: " + totalNumOfMeasurements;
+		
+		//Text is changed
+		datasetSummaryTextArea.setText(result); 	
+	}
+	
+	/**
+	 * Updates the details that are displayed on the current selection summary
+	 * @param text New Data to be displayed
+	 */
+	public void updateCurrentSelectionSummary(String text) {
+		if(text != null) {
+			visualisedCurvesDetailsTextArea.setText(text);
+		}
+	}
+	
+	/**
 	 * Action listener class for the page elements
 	 * @author tomap
 	 * 15/05/2022
@@ -188,7 +239,7 @@ public class GUIPanel extends AbstractGUIPanel {
 		public void itemStateChanged(ItemEvent e) {
 			Object source = e.getSource();
 			if(source == cbIncrements) {
-
+				visualisedCurvesPanel.redrawGraph();
 			}
 			else if(source == cbAverageValue) {
 

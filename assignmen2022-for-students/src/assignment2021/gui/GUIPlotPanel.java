@@ -1,7 +1,6 @@
 package assignment2021.gui;
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -11,8 +10,6 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-
 import assignment2021.codeprovided.fitnesstracker.Participant;
 import assignment2021.codeprovided.fitnesstracker.Tracker;
 import assignment2021.codeprovided.fitnesstracker.measurements.Measurement;
@@ -37,6 +34,8 @@ public class GUIPlotPanel extends BasicGUIPlotPanel {
 	private ArrayList<MeasurementAssociation> loadedData;
 	
 	private ArrayList<Participant> participants;
+	
+	private String maxValueName = "";
 	
 	public GUIPlotPanel(AbstractGUIPanel parentGUIPanel) {
 		super(parentGUIPanel);
@@ -137,14 +136,33 @@ public class GUIPlotPanel extends BasicGUIPlotPanel {
 						//Coordinates for the data created
 						dataConvertedToCoordinates = new double[relevantMeasurmeents.size()][2];
 						count = 0;
+						Double prevValue = 0.0;
 						
 						//The data's value is scaled to match the scale calculated before. Then it is offset so that it fits on the current graph size
 						for(Measurement currentMeasurement : relevantMeasurmeents) {
 							dataConvertedToCoordinates[count][0] = (currentMeasurement.getCount() * XSCALE) + CHARTSTARTX;
-							dataConvertedToCoordinates[count][1] = formatHeight(currentMeasurement.getValue().doubleValue() * YSCALE) - CHARTENDY;
+							
+							//If increments selected
+							if((((GUIPanel)parentGUIPanel).isShowIncrementsSelected()) && (((GUIPanel)parentGUIPanel).getSelectedMeasurementType() != MeasurementType.DISTANCE)){
+								//first value so set to starting position of graph
+								if(count == 0) {
+									prevValue = currentMeasurement.getValue().doubleValue();
+									dataConvertedToCoordinates[0][1] = d.getHeight() - CHARTENDY;
+								}
+								else {
+									//Absolute value of difference is calculated as the measurement instead
+									dataConvertedToCoordinates[count][1] = formatHeight(Math.abs(prevValue - currentMeasurement.getValue().doubleValue()) * YSCALE) - CHARTENDY;
+									prevValue = currentMeasurement.getValue().doubleValue();
+								}
+							}
+							else {
+								//Normal value is used for height
+								dataConvertedToCoordinates[count][1] = formatHeight(currentMeasurement.getValue().doubleValue() * YSCALE) - CHARTENDY;
+							}
+							
 							count++;
 						}
-						g2.setColor(randomColour());
+						g2.setColor(currentSelection.getColour(currentTracker.getName()));						
 						
 						//If the measurement selected isn't distance then it will be plotted as a line graph and not a bar chart
 						if(((GUIPanel)parentGUIPanel).getSelectedMeasurementType() != MeasurementType.DISTANCE) {
@@ -178,26 +196,8 @@ public class GUIPlotPanel extends BasicGUIPlotPanel {
 			
 		}
 		
-		
-		
-			
-	
-	}
-	
-	/**
-	 * A random colour is generated an returned
-	 * @return Random colour
-	 */
-	private Color randomColour() {
-		//A random RGB values of the colour are generated
-		Random rand = new Random();
-		float red = rand.nextFloat();
-		float green = rand.nextFloat();
-		float blue = rand.nextFloat();
-		
-		//Values are turned into an associated colour then returned
-		Color generatedRandomColour = new Color(red, green, blue);
-		return generatedRandomColour;
+		//Updates the displayed data text box
+		updateDetails();
 	}
 	
 	/**
@@ -291,7 +291,6 @@ public class GUIPlotPanel extends BasicGUIPlotPanel {
 			
 			//Checks for participant presence
 			if(foundParticipant != null) {
-				//Loops all trackers
 				for(Tracker currentTracker : foundParticipant.getAllTrackers()) {
 					//Checks for matching tracker in selected trackers to be plotted
 					if(currentSelection.checkForTracker(currentTracker.getName())) {
@@ -300,6 +299,7 @@ public class GUIPlotPanel extends BasicGUIPlotPanel {
 							//If value is bigger it is saved
 							if(currentMeasurement.getValue().doubleValue() > maxValue[0]) {
 								maxValue[0] = currentMeasurement.getValue().doubleValue();
+								maxValueName = foundParticipant.getName();
 							}
 						}
 						//If count of position is larger it is saved
@@ -336,4 +336,23 @@ public class GUIPlotPanel extends BasicGUIPlotPanel {
 		this.repaint();
 	}
 
+	/**
+	 * Updates the details that are displayed on the current selection summary
+	 */
+	private void updateDetails() {
+		String text = "";
+		if((loadedData == null) || (loadedData.isEmpty())) {
+			text = "No Data Selected";
+		}
+		else {	
+			double[] maxValue = findMaxValueFromAllMeasurements();
+			text += "Number of Participants Selected: " + loadedData.size();
+			text += "\nNumber of Trackers currently Selected: " + findNumberOfTrackers();
+			text += "\nMax Value is currently \"" + maxValue[0] + "\" and it belongs to Participant \"" + maxValueName + "\"";
+		}
+		
+		
+		
+		((GUIPanel)parentGUIPanel).updateCurrentSelectionSummary(text);
+	}
 }

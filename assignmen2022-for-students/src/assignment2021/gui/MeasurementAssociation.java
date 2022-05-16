@@ -1,10 +1,9 @@
 package assignment2021.gui;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import assignment2021.codeprovided.fitnesstracker.measurements.Measurement;
-import assignment2021.codeprovided.fitnesstracker.*;
+import java.util.Random;
 
 /**
  * A class to keep track of the values already plotted on the graph
@@ -14,6 +13,7 @@ import assignment2021.codeprovided.fitnesstracker.*;
 public class MeasurementAssociation {
 	private String participantName;
 	private ArrayList<String> plottedTrackers;
+	private HashMap<String, Color> generatedColours;
 	
 	/**
 	 * Constructor
@@ -24,6 +24,9 @@ public class MeasurementAssociation {
 		participantName = partName;
 		plottedTrackers = new ArrayList<String>();
 		plottedTrackers.add(firstTracker);
+		
+		generatedColours = new HashMap<String, Color>();
+		generatedColours.put(firstTracker, randomColour());
 	}
 	
 	/**
@@ -56,6 +59,7 @@ public class MeasurementAssociation {
 	 */
 	public void addTracker(String trackerToBeAdded) {
 		plottedTrackers.add(trackerToBeAdded);
+		generatedColours.put(trackerToBeAdded, randomColour());
 	}
 	
 	/**
@@ -65,6 +69,7 @@ public class MeasurementAssociation {
 	public void removeTracker(String trackerToBeRemoved) {
 		if(plottedTrackers != null) {
 			if(plottedTrackers.contains(trackerToBeRemoved)) {
+				generatedColours.remove(trackerToBeRemoved);
 				plottedTrackers.remove(trackerToBeRemoved);
 			}
 		}
@@ -86,6 +91,31 @@ public class MeasurementAssociation {
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * A random colour is generated an returned
+	 * @return Random colour
+	 */
+	private Color randomColour() {
+		//A random RGB values of the colour are generated
+		Random rand = new Random();
+		float red = rand.nextFloat();
+		float green = rand.nextFloat();
+		float blue = rand.nextFloat();
+		
+		//Values are turned into an associated colour then returned
+		Color generatedRandomColour = new Color(red, green, blue);
+		return generatedRandomColour;
+	}
+	
+	/**
+	 * Retrieves the colour associated to the tracker provided
+	 * @param tracker Tracker colour to be searched for
+	 * @return The tracker colour
+	 */
+	public Color getColour(String tracker) {
+		return generatedColours.get(tracker);
 	}
 	
 	
